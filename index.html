@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Pedidos - Restaurante</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .menu {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .menu-item {
+            padding: 10px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .menu-item:hover {
+            background-color: #2980b9;
+        }
+        .output {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 100px;
+            background-color: #f9f9f9;
+        }
+        .success {
+            color: #27ae60;
+        }
+        .error {
+            color: #e74c3c;
+        }
+        .info {
+            color: #3498db;
+        }
+        #prepararTodos {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        #prepararTodos:hover {
+            background-color: #27ae60;
+        }
+        #limpar {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #limpar:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sistema de Pedidos - Restaurante (Promisses)</h1>
+        
+        <div class="menu">
+            <button class="menu-item" onclick="fazerPedido('Pizza Margherita', 2000)">Pizza Margherita (2s)</button>
+            <button class="menu-item" onclick="fazerPedido('Espaguete Carbonara', 1500)">Espaguete Carbonara (1.5s)</button>
+            <button class="menu-item" onclick="fazerPedido('Salada Caesar', 800)">Salada Caesar (0.8s)</button>
+            <button class="menu-item" onclick="fazerPedido('Panqueca', 1000)">Panqueca (1s)</button>
+        </div>
+        
+        <button id="prepararTodos" onclick="prepararTodosPedidos()">Preparar Todos os Pedidos</button>
+        <button id="limpar" onclick="limparOutput()">Limpar Resultados</button>
+        
+        <div class="output" id="output"></div>
+    </div>
+
+    <script>
+        const output = document.getElementById('output');
+        
+        function fazerPedido(pedido, tempoPreparo) {
+            adicionarMensagem(`Iniciando preparo do pedido: ${pedido}...`, 'info');
+            
+            prepararPedido(pedido, tempoPreparo)
+                .then((mensagem) => {
+                    adicionarMensagem(mensagem, 'success');
+                })
+                .catch((erro) => {
+                    adicionarMensagem(erro, 'error');
+                })
+                .finally(() => {
+                    adicionarMensagem(`Processo concluído para: ${pedido}`, 'info');
+                });
+        }
+        
+        function prepararPedido(pedido, tempoPreparo) {
+            return new Promise((resolve, reject) => {
+                // Simulando uma chance de 20% de erro (faltar ingredientes)
+                const erro = Math.random() < 0.2;
+                
+                setTimeout(() => {
+                    if (erro) {
+                        reject(`Pedido "${pedido}" não pode ser preparado: Faltaram ingredientes.`);
+                    } else {
+                        resolve(`Pedido "${pedido}" está pronto! Tempo de preparo: ${tempoPreparo/1000} segundos.`);
+                    }
+                }, tempoPreparo);
+            });
+        }
+        
+        function prepararTodosPedidos() {
+            const pedidos = [
+                { nome: "Pizza Margherita", tempo: 2000 },
+                { nome: "Espaguete Carbonara", tempo: 1500 },
+                { nome: "Salada Caesar", tempo: 800 },
+                { nome: "Panqueca", tempo: 1000 }
+            ];
+            
+            adicionarMensagem("Iniciando preparo de TODOS os pedidos...", 'info');
+            
+            const preparos = pedidos.map(pedido => {
+                adicionarMensagem(`Preparando: ${pedido.nome}...`, 'info');
+                return prepararPedido(pedido.nome, pedido.tempo);
+            });
+            
+            Promise.all(preparos)
+                .then((resultados) => {
+                    adicionarMensagem("TODOS os pedidos foram preparados com sucesso!", 'success');
+                    resultados.forEach(resultado => {
+                        adicionarMensagem(resultado, 'success');
+                    });
+                })
+                .catch((erro) => {
+                    adicionarMensagem("Algo deu errado com os pedidos:", 'error');
+                    adicionarMensagem(erro, 'error');
+                })
+                .finally(() => {
+                    adicionarMensagem("Processo de preparo concluído para todos os pedidos.", 'info');
+                });
+        }
+        
+        function adicionarMensagem(texto, tipo) {
+            const p = document.createElement('p');
+            p.textContent = texto;
+            p.className = tipo;
+            output.appendChild(p);
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function limparOutput() {
+            output.innerHTML = '';
+        }
+    </script>
+</body>
+</html>
